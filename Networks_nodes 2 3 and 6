@@ -1,0 +1,670 @@
+
+R version 3.4.1 (2017-06-30) -- "Single Candle"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R es un software libre y viene sin GARANTIA ALGUNA.
+Usted puede redistribuirlo bajo ciertas circunstancias.
+Escriba 'license()' o 'licence()' para detalles de distribucion.
+
+R es un proyecto colaborativo con muchos contribuyentes.
+Escriba 'contributors()' para obtener más información y
+'citation()' para saber cómo citar R o paquetes de R en publicaciones.
+
+Escriba 'demo()' para demostraciones, 'help()' para el sistema on-line de ayuda,
+o 'help.start()' para abrir el sistema de ayuda HTML con su navegador.
+Escriba 'q()' para salir de R.
+
+> library(WGCNA)
+Loading required package: dynamicTreeCut
+Loading required package: fastcluster
+
+Attaching package: ‘fastcluster’
+
+The following object is masked from ‘package:stats’:
+
+    hclust
+
+
+==========================================================================
+*
+*  Package WGCNA 1.66 loaded.
+*
+*    Important note: It appears that your system supports multi-threading,
+*    but it is not enabled within WGCNA in R. 
+*    To allow multi-threading within WGCNA with all available cores, use 
+*
+*          allowWGCNAThreads()
+*
+*    within R. Use disableWGCNAThreads() to disable threading if necessary.
+*    Alternatively, set the following environment variable on your system:
+*
+*          ALLOW_WGCNA_THREADS=<number_of_processors>
+*
+*    for example 
+*
+*          ALLOW_WGCNA_THREADS=4
+*
+*    To set the environment variable in linux bash shell, type 
+*
+*           export ALLOW_WGCNA_THREADS=4
+*
+*     before running R. Other operating systems or shells will
+*     have a similar command to achieve the same aim.
+*
+==========================================================================
+
+
+
+Attaching package: ‘WGCNA’
+
+The following object is masked from ‘package:stats’:
+
+    cor
+
+Warning message:
+package ‘WGCNA’ was built under R version 3.4.4 
+> library(igraph)
+
+Attaching package: ‘igraph’
+
+The following objects are masked from ‘package:stats’:
+
+    decompose, spectrum
+
+The following object is masked from ‘package:base’:
+
+    union
+
+Warning message:
+package ‘igraph’ was built under R version 3.4.4 
+> options(stringAsFactors=F)
+> enableWGCNAThreads()
+Allowing parallel execution with up to 3 working processes.
+> data<-read.csv("Hcru2019_Node2_GO.csv",sep=";",quote="",header=T)
+> head(data)
+       TranscriptID Hcru_FH Hcru_DH  Hcru_RH         sd    average        cv
+1 comp12473_c0_seq1   1.915   1.310   10.060   4.886538   4.428333 1.1034712
+2 comp14561_c0_seq2   0.000  19.455   74.261  38.507339  31.238667 1.2326819
+3 comp13788_c0_seq2   0.000   4.305   13.134   6.695598   5.813000 1.1518318
+4 comp15713_c0_seq1  36.925 366.311  877.775 423.697865 427.003667 0.9922581
+5 comp11969_c0_seq1  98.166 356.487 1882.864 964.512263 779.172333 1.2378677
+6 comp12111_c0_seq1  53.525 125.167  406.845 186.775308 195.179000 0.9569437
+  sc.Hcru_FH sc.Hcru_DH sc.Hcru_RH        PC1      PC2      PC3 som.node
+1 -0.5143382 -0.6381477   1.152486 -0.5459093 1.767442 2.13e-13        2
+2 -0.8112393 -0.3060109   1.117250 -0.9972234 1.448010 1.99e-13        2
+3 -0.8681823 -0.2252226   1.093405 -1.0841183 1.356551 1.93e-13        2
+4 -0.9206529 -0.1432452   1.063898 -1.1643369 1.258960 1.86e-13        2
+5 -0.7060629 -0.4382374   1.144300 -0.8370594 1.586911 2.07e-13        2
+6 -0.7584193 -0.3748461   1.133265 -0.9167405 1.522062 2.03e-13        2
+    distance
+1 0.03005542
+2 0.07481517
+3 0.13975572
+4 0.22444475
+5 0.01091277
+6 0.03470696
+> data.count<-data[c(1:4]]
+Error: inesperado ']' in "data.count<-data[c(1:4]"
+> data.count<-data[c(1:4)]
+> row.names(data.count)<-make.names(data.count[,1],T)
+> head(data.count)
+                       TranscriptID Hcru_FH Hcru_DH  Hcru_RH
+comp12473_c0_seq1 comp12473_c0_seq1   1.915   1.310   10.060
+comp14561_c0_seq2 comp14561_c0_seq2   0.000  19.455   74.261
+comp13788_c0_seq2 comp13788_c0_seq2   0.000   4.305   13.134
+comp15713_c0_seq1 comp15713_c0_seq1  36.925 366.311  877.775
+comp11969_c0_seq1 comp11969_c0_seq1  98.166 356.487 1882.864
+comp12111_c0_seq1 comp12111_c0_seq1  53.525 125.167  406.845
+> Data=as.data.frame(data.count[,-c(1)])
+> head(Data)
+                  Hcru_FH Hcru_DH  Hcru_RH
+comp12473_c0_seq1   1.915   1.310   10.060
+comp14561_c0_seq2   0.000  19.455   74.261
+comp13788_c0_seq2   0.000   4.305   13.134
+comp15713_c0_seq1  36.925 366.311  877.775
+comp11969_c0_seq1  98.166 356.487 1882.864
+comp12111_c0_seq1  53.525 125.167  406.845
+> id=rownames(Data)
+> counts.t<-t(Data)
+> powers=c(c(1:20),seq(from=10,to=20,by=2))
+> sft=pickSoftThreshold(counts.t,powerVector=powers,RsquaredCut=0.9,verbose=5)
+pickSoftThreshold: will use block size 20.
+ pickSoftThreshold: calculating connectivity for given powers...
+   ..working on genes 1 through 20 of 20
+   Power SFT.R.sq slope truncated.R.sq mean.k. median.k. max.k.
+1      1   0.1690 98.20          0.390    18.4      18.6   18.7
+2      2   0.1610 48.40          0.390    17.8      18.2   18.4
+3      3   0.1470 31.50          0.384    17.3      17.8   18.1
+4      4   0.1330 23.00          0.378    16.9      17.5   17.8
+5      5   0.1230 18.00          0.378    16.4      17.2   17.6
+6      6   0.1110 14.60          0.370    16.1      16.9   17.4
+7      7   0.0810 11.00          0.359    15.7      16.6   17.2
+8      8   0.0717  9.25          0.352    15.4      16.3   16.9
+9      9   0.0633  7.90          0.345    15.1      16.1   16.8
+10    10   0.0556  6.82          0.338    14.8      15.9   16.6
+11    10   0.0556  6.82          0.338    14.8      15.9   16.6
+12    11   0.0486  5.93          0.332    14.5      15.7   16.4
+13    12   0.0422  5.18          0.325    14.3      15.5   16.2
+14    12   0.0422  5.18          0.325    14.3      15.5   16.2
+15    13   0.1060  7.38          0.369    14.1      15.3   16.1
+16    14   0.1040  6.90          0.366    13.9      15.2   15.9
+17    14   0.1040  6.90          0.366    13.9      15.2   15.9
+18    15   0.0742  5.67          0.361    13.6      15.0   15.8
+19    16   0.0673  5.18          0.353    13.5      14.9   15.6
+20    16   0.0673  5.18          0.353    13.5      14.9   15.6
+21    17   0.0624  4.76          0.347    13.3      14.7   15.5
+22    18   0.0565  4.38          0.340    13.1      14.6   15.4
+23    18   0.0565  4.38          0.340    13.1      14.6   15.4
+24    19   0.0512  4.04          0.333    12.9      14.5   15.2
+25    20   0.0462  3.73          0.327    12.8      14.3   15.1
+26    20   0.0462  3.73          0.327    12.8      14.3   15.1
+> adjacency=adjacency(counts.t,power=9)
+> TOM=TOMsimilarity(adjacency)
+..connectivity..
+..matrix multiplication (system BLAS)..
+..normalization..
+..done.
+> colnames(TOM)=id
+> rownames(TOM)=id
+> hub=rowSums(TOM)
+> net=graph.adjacency(TOM,mode="undirected",weighted=T,diag=F)
+> summary(net)
+IGRAPH 8a7d898 UNW- 20 190 -- 
++ attr: name (v/c), weight (e/n)
+> community.fastgreedy=fastgreedy.community(net)
+> table(community.fastgreedy$membership)
+
+ 1  2 
+19  1 
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"greenyellow"
+> V(net)[community.fastgreedy$membership==2]$color<-"magenta"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> V(net)$shape<-"circle"
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"greenyellow"
+> V(net)[community.fastgreedy$membership==2]$color<-"magenta"
+> V(net)[hub>30]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> V(net)$shape<-"circle"
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)[hub>50]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)[hub>20]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)[hub>10]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)[hub>15]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)[hub>18]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)[hub>19]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)[hub>20]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)[hub>30]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)[hub>50]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"greenyellow"
+> V(net)[community.fastgreedy$membership==2]$color<-"magenta"
+> V(net)[hub>20]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"greenyellow"
+> V(net)[community.fastgreedy$membership==2]$color<-"magenta"
+> V(net)[hub>15]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"greenyellow"
+> V(net)[community.fastgreedy$membership==2]$color<-"magenta"
+> V(net)[hub>18]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> data<-read.csv("Hcru2019_Node3_GO.csv",sep=";",quote="",header=T)
+> data.count<-data[c(1:4]]
+Error: inesperado ']' in "data.count<-data[c(1:4]"
+> data.count<-data[c(1:4)]
+> row.names(data.count)<-make.names(data.count[,1],T)
+> head(data.count)
+                       TranscriptID Hcru_FH Hcru_DH Hcru_RH
+comp34480_c0_seq1 comp34480_c0_seq1  26.882   0.000   0.000
+comp13857_c0_seq1 comp13857_c0_seq1   3.370   1.310   0.000
+comp13785_c0_seq1 comp13785_c0_seq1 243.596  93.247  30.821
+comp14060_c0_seq1 comp14060_c0_seq1 108.151  57.902   2.053
+comp14604_c1_seq1 comp14604_c1_seq1 511.594 140.188  43.313
+comp15032_c0_seq4 comp15032_c0_seq4 138.422  15.847   6.431
+> Data=as.data.frame(data.count[,-c(1)])
+> head(Data)
+                  Hcru_FH Hcru_DH Hcru_RH
+comp34480_c0_seq1  26.882   0.000   0.000
+comp13857_c0_seq1   3.370   1.310   0.000
+comp13785_c0_seq1 243.596  93.247  30.821
+comp14060_c0_seq1 108.151  57.902   2.053
+comp14604_c1_seq1 511.594 140.188  43.313
+comp15032_c0_seq4 138.422  15.847   6.431
+> id=rownames(Data)
+> counts.t<-t(Data)
+> powers=c(c(1:20),seq(from=10,to=20,by=2))
+> sft=pickSoftThreshold(counts.t,powerVector=powers,RsquaredCut=0.9,verbose=5)
+pickSoftThreshold: will use block size 13.
+ pickSoftThreshold: calculating connectivity for given powers...
+   ..working on genes 1 through 13 of 13
+   Power SFT.R.sq slope truncated.R.sq mean.k. median.k. max.k.
+1      1    0.201 229.0          0.336   11.70     11.80  11.80
+2      2    0.195 115.0          0.336   11.40     11.50  11.70
+3      3    0.190  77.3          0.335   11.10     11.30  11.50
+4      4    0.184  58.3          0.335   10.90     11.10  11.40
+5      5    0.300  58.1          0.367   10.60     10.90  11.30
+6      6    0.294  49.0          0.366   10.40     10.70  11.10
+7      7    0.291  42.3          0.382   10.20     10.50  11.00
+8      8    0.286  37.4          0.381    9.98     10.40  10.90
+9      9    0.281  33.5          0.381    9.78     10.20  10.70
+10    10    0.276  30.5          0.380    9.60     10.00  10.60
+11    10    0.276  30.5          0.380    9.60     10.00  10.60
+12    11    0.271  28.0          0.380    9.43      9.90  10.50
+13    12    0.266  25.9          0.379    9.26      9.76  10.40
+14    12    0.266  25.9          0.379    9.26      9.76  10.40
+15    13    0.261  24.1          0.378    9.10      9.62  10.30
+16    14    0.256  22.6          0.378    8.95      9.49  10.20
+17    14    0.256  22.6          0.378    8.95      9.49  10.20
+18    15    0.252  21.3          0.377    8.81      9.37  10.10
+19    16    0.247  20.1          0.376    8.67      9.25   9.97
+20    16    0.247  20.1          0.376    8.67      9.25   9.97
+21    17    0.243  19.1          0.375    8.54      9.13   9.87
+22    18    0.239  18.2          0.374    8.41      9.02   9.77
+23    18    0.239  18.2          0.374    8.41      9.02   9.77
+24    19    0.234  17.3          0.373    8.29      8.91   9.68
+25    20    0.231  16.6          0.372    8.17      8.81   9.59
+26    20    0.231  16.6          0.372    8.17      8.81   9.59
+> adjacency=adjacency(counts.t,power=9)
+> TOM=TOMsimilarity(adjacency)
+..connectivity..
+..matrix multiplication (system BLAS)..
+..normalization..
+..done.
+> colnames(TOM)=id
+> rownames(TOM)=id
+> hub=rowSums(TOM)
+> net=graph.adjacency(TOM,mode="undirected",weighted=T,diag=F)
+> summary(net)
+IGRAPH b352817 UNW- 13 78 -- 
++ attr: name (v/c), weight (e/n)
+> community.fastgreedy=fastgreedy.community(net)
+> table(community.fastgreedy$membership)
+
+ 1  2 
+12  1 
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"dodgerblue1"
+> V(net)[community.fastgreedy$membership==2]$color<-"yellow1"
+> V(net)[hub>20]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"dodgerblue1"
+> V(net)[community.fastgreedy$membership==2]$color<-"yellow1"
+> V(net)[hub>14]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"dodgerblue1"
+> V(net)[community.fastgreedy$membership==2]$color<-"yellow1"
+> V(net)[hub>13]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"dodgerblue1"
+> V(net)[community.fastgreedy$membership==2]$color<-"yellow1"
+> V(net)[hub>12]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"dodgerblue1"
+> V(net)[community.fastgreedy$membership==2]$color<-"yellow1"
+> V(net)[hub>11]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"dodgerblue1"
+> V(net)[community.fastgreedy$membership==2]$color<-"yellow1"
+> V(net)[hub>12]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> data<-read.csv("Hcru2019_Node6_GO.csv",sep=";",quote="",header=T)
+> data.count<-data[c(1:4]]
+Error: inesperado ']' in "data.count<-data[c(1:4]"
+> data.count<-data[c(1:4)]
+> row.names(data.count)<-make.names(data.count[,1],T)
+> head(data.count)
+                       TranscriptID Hcru_FH Hcru_DH Hcru_RH
+comp12341_c0_seq4 comp12341_c0_seq4   0.536  10.586   1.703
+comp11793_c0_seq1 comp11793_c0_seq1   3.360  81.587  23.564
+comp12184_c0_seq1 comp12184_c0_seq1   0.000 118.253  11.286
+comp13139_c1_seq1 comp13139_c1_seq1   0.000 177.240  72.763
+comp13180_c0_seq1 comp13180_c0_seq1  30.578 420.832 102.932
+comp13938_c0_seq1 comp13938_c0_seq1   1.532 105.831  10.721
+> Data=as.data.frame(data.count[,-c(1)])
+> head(Data)
+                  Hcru_FH Hcru_DH Hcru_RH
+comp12341_c0_seq4   0.536  10.586   1.703
+comp11793_c0_seq1   3.360  81.587  23.564
+comp12184_c0_seq1   0.000 118.253  11.286
+comp13139_c1_seq1   0.000 177.240  72.763
+comp13180_c0_seq1  30.578 420.832 102.932
+comp13938_c0_seq1   1.532 105.831  10.721
+> id=rownames(Data)
+> counts.t<-t(Data)
+> powers=c(c(1:20),seq(from=10,to=20,by=2))
+> sft=pickSoftThreshold(counts.t,powerVector=powers,RsquaredCut=0.9,verbose=5)
+pickSoftThreshold: will use block size 9.
+ pickSoftThreshold: calculating connectivity for given powers...
+   ..working on genes 1 through 9 of 9
+   Power SFT.R.sq  slope truncated.R.sq mean.k. median.k. max.k.
+1      1 1.78e-03 10.100          0.115    7.66      7.79   7.83
+2      2 1.19e-03  4.190          0.119    7.37      7.61   7.67
+3      3 6.76e-04  2.140          0.122    7.11      7.45   7.53
+4      4 2.83e-04  1.060          0.125    6.88      7.30   7.39
+5      5 4.99e-05  0.360          0.127    6.68      7.16   7.26
+6      6 1.03e-05 -0.138          0.129    6.49      7.04   7.14
+7      7 1.93e-04 -0.521          0.129    6.32      6.93   7.03
+8      8 6.23e-04 -0.829          0.129    6.17      6.83   6.93
+9      9 1.32e-03 -1.090          0.128    6.03      6.73   6.84
+10    10 2.29e-03 -1.300          0.127    5.90      6.65   6.75
+11    10 2.29e-03 -1.300          0.127    5.90      6.65   6.75
+12    11 3.54e-03 -1.490          0.125    5.78      6.56   6.66
+13    12 5.09e-03 -1.660          0.123    5.67      6.49   6.58
+14    12 5.09e-03 -1.660          0.123    5.67      6.49   6.58
+15    13 1.05e-02 -2.220          0.116    5.57      6.41   6.51
+16    14 1.16e-02  2.280          0.336    5.47      6.33   6.45
+17    14 1.16e-02  2.280          0.336    5.47      6.33   6.45
+18    15 8.79e-03  1.870          0.328    5.38      6.26   6.39
+19    16 6.42e-03  1.520          0.319    5.30      6.19   6.33
+20    16 6.42e-03  1.520          0.319    5.30      6.19   6.33
+21    17 4.44e-03  1.200          0.311    5.22      6.12   6.27
+22    18 2.85e-03  0.917          0.302    5.14      6.06   6.22
+23    18 2.85e-03  0.917          0.302    5.14      6.06   6.22
+24    19 1.63e-03  0.664          0.294    5.07      6.00   6.17
+25    20 7.64e-04  0.436          0.286    5.01      5.94   6.12
+26    20 7.64e-04  0.436          0.286    5.01      5.94   6.12
+> adjacency=adjacency(counts.t,power=9)
+> TOM=TOMsimilarity(adjacency)
+..connectivity..
+..matrix multiplication (system BLAS)..
+..normalization..
+..done.
+> colnames(TOM)=id
+> rownames(TOM)=id
+> hub=rowSums(TOM)
+> net=graph.adjacency(TOM,mode="undirected",weighted=T,diag=F)
+> summary(net)
+IGRAPH 810156d UNW- 9 36 -- 
++ attr: name (v/c), weight (e/n)
+> community.fastgreedy=fastgreedy.community(net)
+> table(community.fastgreedy$membership)
+
+1 2 
+8 1 
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"firebrick1"
+> V(net)[community.fastgreedy$membership==2]$color<-"gold1"
+> V(net)[hub>11]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.001,edge.color="snow3",edge.width=E(net)$weight)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.05,edge.color="snow3",edge.width=E(net)$weight)
+Warning messages:
+1: unable to open printer 
+2: opening device failed 
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"firebrick1"
+> V(net)[community.fastgreedy$membership==2]$color<-"gold1"
+> V(net)[hub>11]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.05,edge.color="snow3",edge.width=E(net)$weight)
+> data<-read.csv("Hcru2019_Node2_GO.csv",sep=";",quote="",header=T)
+> data.count<-data[c(1:4]]
+Error: inesperado ']' in "data.count<-data[c(1:4]"
+> data.count<-data[c(1:4)]
+> row.names(data.count)<-make.names(data.count[,1],T)
+> head(data.count)
+                       TranscriptID Hcru_FH Hcru_DH  Hcru_RH
+comp12473_c0_seq1 comp12473_c0_seq1   1.915   1.310   10.060
+comp14561_c0_seq2 comp14561_c0_seq2   0.000  19.455   74.261
+comp13788_c0_seq2 comp13788_c0_seq2   0.000   4.305   13.134
+comp15713_c0_seq1 comp15713_c0_seq1  36.925 366.311  877.775
+comp11969_c0_seq1 comp11969_c0_seq1  98.166 356.487 1882.864
+comp12111_c0_seq1 comp12111_c0_seq1  53.525 125.167  406.845
+> Data=as.data.frame(data.count[,-c(1)])
+> head(Data)
+                  Hcru_FH Hcru_DH  Hcru_RH
+comp12473_c0_seq1   1.915   1.310   10.060
+comp14561_c0_seq2   0.000  19.455   74.261
+comp13788_c0_seq2   0.000   4.305   13.134
+comp15713_c0_seq1  36.925 366.311  877.775
+comp11969_c0_seq1  98.166 356.487 1882.864
+comp12111_c0_seq1  53.525 125.167  406.845
+> id=rownames(Data)
+> counts.t<-t(Data)
+> powers=c(c(1:20),seq(from=10,to=20,by=2))
+> sft=pickSoftThreshold(counts.t,powerVector=powers,RsquaredCut=0.9,verbose=5)
+pickSoftThreshold: will use block size 20.
+ pickSoftThreshold: calculating connectivity for given powers...
+   ..working on genes 1 through 20 of 20
+   Power SFT.R.sq slope truncated.R.sq mean.k. median.k. max.k.
+1      1   0.1690 98.20          0.390    18.4      18.6   18.7
+2      2   0.1610 48.40          0.390    17.8      18.2   18.4
+3      3   0.1470 31.50          0.384    17.3      17.8   18.1
+4      4   0.1330 23.00          0.378    16.9      17.5   17.8
+5      5   0.1230 18.00          0.378    16.4      17.2   17.6
+6      6   0.1110 14.60          0.370    16.1      16.9   17.4
+7      7   0.0810 11.00          0.359    15.7      16.6   17.2
+8      8   0.0717  9.25          0.352    15.4      16.3   16.9
+9      9   0.0633  7.90          0.345    15.1      16.1   16.8
+10    10   0.0556  6.82          0.338    14.8      15.9   16.6
+11    10   0.0556  6.82          0.338    14.8      15.9   16.6
+12    11   0.0486  5.93          0.332    14.5      15.7   16.4
+13    12   0.0422  5.18          0.325    14.3      15.5   16.2
+14    12   0.0422  5.18          0.325    14.3      15.5   16.2
+15    13   0.1060  7.38          0.369    14.1      15.3   16.1
+16    14   0.1040  6.90          0.366    13.9      15.2   15.9
+17    14   0.1040  6.90          0.366    13.9      15.2   15.9
+18    15   0.0742  5.67          0.361    13.6      15.0   15.8
+19    16   0.0673  5.18          0.353    13.5      14.9   15.6
+20    16   0.0673  5.18          0.353    13.5      14.9   15.6
+21    17   0.0624  4.76          0.347    13.3      14.7   15.5
+22    18   0.0565  4.38          0.340    13.1      14.6   15.4
+23    18   0.0565  4.38          0.340    13.1      14.6   15.4
+24    19   0.0512  4.04          0.333    12.9      14.5   15.2
+25    20   0.0462  3.73          0.327    12.8      14.3   15.1
+26    20   0.0462  3.73          0.327    12.8      14.3   15.1
+> adjacency=adjacency(counts.t,power=9)
+> TOM=TOMsimilarity(adjacency)
+..connectivity..
+..matrix multiplication (system BLAS)..
+..normalization..
+..done.
+> colnames(TOM)=id
+> rownames(TOM)=id
+> hub=rowSums(TOM)
+> net=graph.adjacency(TOM,mode="undirected",weighted=T,diag=F)
+> summary(net)
+IGRAPH 176d7ec UNW- 20 190 -- 
++ attr: name (v/c), weight (e/n)
+> community.fastgreedy=fastgreedy.community(net)
+> table(community.fastgreedy$membership)
+
+ 1  2 
+19  1 
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"greenyellow"
+> V(net)[community.fastgreedy$membership==2]$color<-"magenta"
+> V(net)[hub>18]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.05,edge.color="snow3",edge.width=E(net)$weight)
+> data<-read.csv("Hcru2019_Node3_GO.csv",sep=";",quote="",header=T)
+> data.count<-data[c(1:4]]
+Error: inesperado ']' in "data.count<-data[c(1:4]"
+> data.count<-data[c(1:4)]
+> row.names(data.count)<-make.names(data.count[,1],T)
+> head(data.count)
+                       TranscriptID Hcru_FH Hcru_DH Hcru_RH
+comp34480_c0_seq1 comp34480_c0_seq1  26.882   0.000   0.000
+comp13857_c0_seq1 comp13857_c0_seq1   3.370   1.310   0.000
+comp13785_c0_seq1 comp13785_c0_seq1 243.596  93.247  30.821
+comp14060_c0_seq1 comp14060_c0_seq1 108.151  57.902   2.053
+comp14604_c1_seq1 comp14604_c1_seq1 511.594 140.188  43.313
+comp15032_c0_seq4 comp15032_c0_seq4 138.422  15.847   6.431
+> Data=as.data.frame(data.count[,-c(1)])
+> head(Data)
+                  Hcru_FH Hcru_DH Hcru_RH
+comp34480_c0_seq1  26.882   0.000   0.000
+comp13857_c0_seq1   3.370   1.310   0.000
+comp13785_c0_seq1 243.596  93.247  30.821
+comp14060_c0_seq1 108.151  57.902   2.053
+comp14604_c1_seq1 511.594 140.188  43.313
+comp15032_c0_seq4 138.422  15.847   6.431
+> id=rownames(Data)
+> counts.t<-t(Data)
+> powers=c(c(1:20),seq(from=10,to=20,by=2))
+> sft=pickSoftThreshold(counts.t,powerVector=powers,RsquaredCut=0.9,verbose=5)
+pickSoftThreshold: will use block size 13.
+ pickSoftThreshold: calculating connectivity for given powers...
+   ..working on genes 1 through 13 of 13
+   Power SFT.R.sq slope truncated.R.sq mean.k. median.k. max.k.
+1      1    0.201 229.0          0.336   11.70     11.80  11.80
+2      2    0.195 115.0          0.336   11.40     11.50  11.70
+3      3    0.190  77.3          0.335   11.10     11.30  11.50
+4      4    0.184  58.3          0.335   10.90     11.10  11.40
+5      5    0.300  58.1          0.367   10.60     10.90  11.30
+6      6    0.294  49.0          0.366   10.40     10.70  11.10
+7      7    0.291  42.3          0.382   10.20     10.50  11.00
+8      8    0.286  37.4          0.381    9.98     10.40  10.90
+9      9    0.281  33.5          0.381    9.78     10.20  10.70
+10    10    0.276  30.5          0.380    9.60     10.00  10.60
+11    10    0.276  30.5          0.380    9.60     10.00  10.60
+12    11    0.271  28.0          0.380    9.43      9.90  10.50
+13    12    0.266  25.9          0.379    9.26      9.76  10.40
+14    12    0.266  25.9          0.379    9.26      9.76  10.40
+15    13    0.261  24.1          0.378    9.10      9.62  10.30
+16    14    0.256  22.6          0.378    8.95      9.49  10.20
+17    14    0.256  22.6          0.378    8.95      9.49  10.20
+18    15    0.252  21.3          0.377    8.81      9.37  10.10
+19    16    0.247  20.1          0.376    8.67      9.25   9.97
+20    16    0.247  20.1          0.376    8.67      9.25   9.97
+21    17    0.243  19.1          0.375    8.54      9.13   9.87
+22    18    0.239  18.2          0.374    8.41      9.02   9.77
+23    18    0.239  18.2          0.374    8.41      9.02   9.77
+24    19    0.234  17.3          0.373    8.29      8.91   9.68
+25    20    0.231  16.6          0.372    8.17      8.81   9.59
+26    20    0.231  16.6          0.372    8.17      8.81   9.59
+> adjacency=adjacency(counts.t,power=9)
+> TOM=TOMsimilarity(adjacency)
+..connectivity..
+..matrix multiplication (system BLAS)..
+..normalization..
+..done.
+> colnames(TOM)=id
+> rownames(TOM)=id
+> hub=rowSums(TOM)
+> net=graph.adjacency(TOM,mode="undirected",weighted=T,diag=F)
+> summary(net)
+IGRAPH a05b684 UNW- 13 78 -- 
++ attr: name (v/c), weight (e/n)
+> community.fastgreedy=fastgreedy.community(net)
+> table(community.fastgreedy$membership)
+
+ 1  2 
+12  1 
+> V(net)$color<-"lightgray"
+> V(net)[community.fastgreedy$membership==1]$color<-"dodgerblue1"
+> V(net)[community.fastgreedy$membership==2]$color<-"yellow1"
+> V(net)[hub>15]$color<-"red"
+> v.label=rep("",length(V(net)))
+> v.label=V(net)$name
+> v.size=rep(3,length(V(net)))
+> sizeGrWindow(20,20)
+> plot(net,layout=layout_with_fr,vertex.size=10,vertex.frame.color=NA,vertex.label=v.label,vertex.label.cex=0.05,edge.color="snow3",edge.width=E(net)$weight)
+> 
