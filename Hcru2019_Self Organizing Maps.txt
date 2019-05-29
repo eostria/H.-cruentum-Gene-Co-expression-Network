@@ -1,0 +1,241 @@
+data<-read.csv("Hcru.normalized.csv", sep=",",quote="",header=T)
+> colnames(data)<-c("TranscriptID","Hcru_FH","Hcru_DH","Hcru_RH")
+> head(data)
+       TranscriptID Hcru_FH Hcru_DH Hcru_RH
+1 comp20833_c0_seq1   0.000  11.112   3.104
+2 comp29096_c0_seq1   2.518   2.255  10.099
+3 comp10014_c0_seq2   2.795   5.003   2.802
+4 comp32848_c0_seq1  18.620   0.000   0.000
+5 comp31609_c0_seq1   0.000   0.000  26.891
+6 comp38917_c0_seq1   0.000   0.000   5.711
+> data.cv<-subset(data[2:4])
+> data.cv$sd<-apply(data.cv,1,function(d)sd(d))
+> head(data.cv)
+  Hcru_FH Hcru_DH Hcru_RH        sd
+1   0.000  11.112   3.104  5.733519
+2   2.518   2.255  10.099  4.454755
+3   2.795   5.003   2.802  1.272773
+4  18.620   0.000   0.000 10.750262
+5   0.000   0.000  26.891 15.525526
+6   0.000   0.000   5.711  3.297247
+> data.cv$average<-rowMeans(subset(data.cv[1:3]))
+> head(data.cv)
+  Hcru_FH Hcru_DH Hcru_RH        sd  average
+1   0.000  11.112   3.104  5.733519 4.738667
+2   2.518   2.255  10.099  4.454755 4.957333
+3   2.795   5.003   2.802  1.272773 3.533333
+4  18.620   0.000   0.000 10.750262 6.206667
+5   0.000   0.000  26.891 15.525526 8.963667
+6   0.000   0.000   5.711  3.297247 1.903667
+> data.cv$cv<-data.cv$sd / data.cv$average
+> head(data.cv)
+  Hcru_FH Hcru_DH Hcru_RH        sd  average        cv
+1   0.000  11.112   3.104  5.733519 4.738667 1.2099435
+2   2.518   2.255  10.099  4.454755 4.957333 0.8986193
+3   2.795   5.003   2.802  1.272773 3.533333 0.3602189
+4  18.620   0.000   0.000 10.750262 6.206667 1.7320508
+5   0.000   0.000  26.891 15.525526 8.963667 1.7320508
+6   0.000   0.000   5.711  3.297247 1.903667 1.7320508
+> dataCV<-cbind(data[1],data.cv)
+> head(dataCV)
+       TranscriptID Hcru_FH Hcru_DH Hcru_RH        sd  average        cv
+1 comp20833_c0_seq1   0.000  11.112   3.104  5.733519 4.738667 1.2099435
+2 comp29096_c0_seq1   2.518   2.255  10.099  4.454755 4.957333 0.8986193
+3 comp10014_c0_seq2   2.795   5.003   2.802  1.272773 3.533333 0.3602189
+4 comp32848_c0_seq1  18.620   0.000   0.000 10.750262 6.206667 1.7320508
+5 comp31609_c0_seq1   0.000   0.000  26.891 15.525526 8.963667 1.7320508
+6 comp38917_c0_seq1   0.000   0.000   5.711  3.297247 1.903667 1.7320508
+> write.csv(dataCV,"Hcru.all.transcript.cv.csv")
+> data<-read.csv("Hcru.all.transcript.cv.csv",header=T)
+> head(data)
+  X      TranscriptID Hcru_FH Hcru_DH Hcru_RH        sd  average        cv
+1 1 comp20833_c0_seq1   0.000  11.112   3.104  5.733519 4.738667 1.2099435
+2 2 comp29096_c0_seq1   2.518   2.255  10.099  4.454755 4.957333 0.8986193
+3 3 comp10014_c0_seq2   2.795   5.003   2.802  1.272773 3.533333 0.3602189
+4 4 comp32848_c0_seq1  18.620   0.000   0.000 10.750262 6.206667 1.7320508
+5 5 comp31609_c0_seq1   0.000   0.000  26.891 15.525526 8.963667 1.7320508
+6 6 comp38917_c0_seq1   0.000   0.000   5.711  3.297247 1.903667 1.7320508
+> data[is.na(data)]<-0
+> length(data$X)
+[1] 67259
+> length(dataCV$TranscriptID)
+[1] 67259
+> quantile(dataCV$cv)
+Error in quantile.default(dataCV$cv) : 
+  missing values and NaN's not allowed if 'na.rm' is FALSE
+> dataCV[is.na(dataCV)]<-0
+> length(dataCV$TranscriptID)
+[1] 67259
+> quantile(dataCV$cv)
+       0%       25%       50%       75%      100% 
+0.0000000 0.3187942 0.8692074 1.7320508 1.7320508 
+> sub.dataCV<-subset(dataCV,cv>0.8692074)
+> head(sub.dataCV)
+       TranscriptID Hcru_FH Hcru_DH Hcru_RH        sd  average        cv
+1 comp20833_c0_seq1   0.000  11.112   3.104  5.733519 4.738667 1.2099435
+2 comp29096_c0_seq1   2.518   2.255  10.099  4.454755 4.957333 0.8986193
+4 comp32848_c0_seq1  18.620   0.000   0.000 10.750262 6.206667 1.7320508
+5 comp31609_c0_seq1   0.000   0.000  26.891 15.525526 8.963667 1.7320508
+6 comp38917_c0_seq1   0.000   0.000   5.711  3.297247 1.903667 1.7320508
+7 comp36527_c0_seq1   0.000   0.000  10.167  5.869920 3.389000 1.7320508
+> length(sub.dataCV$TranscriptID)
+[1] 33633
+> m.sub.data<-as.matrix(sub.dataCV[2:4])
+> sc.sub.data<-t(scale(t(m.sub.data)))
+> tisdata<-as.matrix(sc.sub.data,dimnames=list(rownames(TranscriptID)))
+> library(ggplot2)
+Need help? Try Stackoverflow: https://stackoverflow.com/tags/ggplot2.
+Warning message:
+package ‘ggplot2’ was built under R version 3.4.4 
+> tispca<-prcomp(tisdata,scale=T)
+> summary(tispca)
+Importance of components%s:
+                          PC1    PC2       PC3
+Standard deviation     1.2340 1.2154 1.398e-13
+Proportion of Variance 0.5076 0.4924 0.000e+00
+Cumulative Proportion  0.5076 1.0000 1.000e+00
+> tis.pca.scores<-data.frame(tispca$x)
+> allData<-cbind(sub.dataCV,sc.sub.data,tis.pca.scores)
+> head(allData)
+       TranscriptID Hcru_FH Hcru_DH Hcru_RH        sd  average        cv
+1 comp20833_c0_seq1   0.000  11.112   3.104  5.733519 4.738667 1.2099435
+2 comp29096_c0_seq1   2.518   2.255  10.099  4.454755 4.957333 0.8986193
+4 comp32848_c0_seq1  18.620   0.000   0.000 10.750262 6.206667 1.7320508
+5 comp31609_c0_seq1   0.000   0.000  26.891 15.525526 8.963667 1.7320508
+6 comp38917_c0_seq1   0.000   0.000   5.711  3.297247 1.903667 1.7320508
+7 comp36527_c0_seq1   0.000   0.000  10.167  5.869920 3.389000 1.7320508
+     Hcru_FH    Hcru_DH    Hcru_RH        PC1       PC2           PC3
+1 -0.8264849  1.1115920 -0.2851071 -1.0480114 -1.043300 -6.358802e-14
+2 -0.5475797 -0.6066177  1.1541973 -0.5963275  1.741674  2.121636e-13
+4  1.1547005 -0.5773503 -0.5773503  1.9531553  0.156325 -7.127632e-14
+5 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.117195e-13
+6 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.117195e-13
+7 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.114975e-13
+> colnames(allData)<-c("TranscriptID","Hcru_FH","Hcru_DH","Hcru_RH","sd","average","cv","sc.Hcru_FH","sc.Hcru_DH","sc.Hcru_RH","PC1","PC2","PC3")
+> head(allData)
+       TranscriptID Hcru_FH Hcru_DH Hcru_RH        sd  average        cv
+1 comp20833_c0_seq1   0.000  11.112   3.104  5.733519 4.738667 1.2099435
+2 comp29096_c0_seq1   2.518   2.255  10.099  4.454755 4.957333 0.8986193
+4 comp32848_c0_seq1  18.620   0.000   0.000 10.750262 6.206667 1.7320508
+5 comp31609_c0_seq1   0.000   0.000  26.891 15.525526 8.963667 1.7320508
+6 comp38917_c0_seq1   0.000   0.000   5.711  3.297247 1.903667 1.7320508
+7 comp36527_c0_seq1   0.000   0.000  10.167  5.869920 3.389000 1.7320508
+  sc.Hcru_FH sc.Hcru_DH sc.Hcru_RH        PC1       PC2           PC3
+1 -0.8264849  1.1115920 -0.2851071 -1.0480114 -1.043300 -6.358802e-14
+2 -0.5475797 -0.6066177  1.1541973 -0.5963275  1.741674  2.121636e-13
+4  1.1547005 -0.5773503 -0.5773503  1.9531553  0.156325 -7.127632e-14
+5 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.117195e-13
+6 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.117195e-13
+7 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.114975e-13
+> write.csv(allData,file="PCA_scores_Hcru2019.csv")
+> write.table(tispca$rotation,"loadings_Hcru2019.txt")
+> library(ggplot2)
+> p<-ggplot(allData,aes(PC1,PC2))
+> p+geom_point(alpha=0.1)+theme_bw()
+> utils:::menuInstallPkgs()
+probando la URL 'https://cran.cnr.berkeley.edu/bin/windows/contrib/3.4/kohonen_3.0.8.zip'
+Content type 'application/zip' length 2530860 bytes (2.4 MB)
+downloaded 2.4 MB
+
+package ‘kohonen’ successfully unpacked and MD5 sums checked
+
+The downloaded binary packages are in
+        C:\Users\Enrique\AppData\Local\Temp\Rtmp2zZfR9\downloaded_packages
+> library(kohonen)
+Warning message:
+package ‘kohonen’ was built under R version 3.4.4 
+> sc.sig<-as.matrix(allData[8:10])
+> set.seed(2)
+> ssom<-som(sc.sig,somgrid(2,3,"hexagonal"))
+> summary(ssom)
+SOM of size 2x3 with a hexagonal topology and a bubble neighbourhood function.
+The number of data layers is 1.
+Distance measure(s) used: sumofsquares.
+Training data included: 33633 objects.
+Mean distance to the closest unit in the map: 0.073.
+> plot(ssom,type="changes")
+> plot(ssom,type="codes")
+> plot(ssom,type="counts")
+> plot(ssom,type="quality")
+> codes<-ssom$codes
+> write.csv(codes,file="Hcru_codes_2019.csv")
+> data.som<-cbind(allData,ssom$unit.classif,ssom$distances)
+> head(data.som)
+       TranscriptID Hcru_FH Hcru_DH Hcru_RH        sd  average        cv
+1 comp20833_c0_seq1   0.000  11.112   3.104  5.733519 4.738667 1.2099435
+2 comp29096_c0_seq1   2.518   2.255  10.099  4.454755 4.957333 0.8986193
+4 comp32848_c0_seq1  18.620   0.000   0.000 10.750262 6.206667 1.7320508
+5 comp31609_c0_seq1   0.000   0.000  26.891 15.525526 8.963667 1.7320508
+6 comp38917_c0_seq1   0.000   0.000   5.711  3.297247 1.903667 1.7320508
+7 comp36527_c0_seq1   0.000   0.000  10.167  5.869920 3.389000 1.7320508
+  sc.Hcru_FH sc.Hcru_DH sc.Hcru_RH        PC1       PC2           PC3
+1 -0.8264849  1.1115920 -0.2851071 -1.0480114 -1.043300 -6.358802e-14
+2 -0.5475797 -0.6066177  1.1541973 -0.5963275  1.741674  2.121636e-13
+4  1.1547005 -0.5773503 -0.5773503  1.9531553  0.156325 -7.127632e-14
+5 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.117195e-13
+6 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.117195e-13
+7 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.114975e-13
+  ssom$unit.classif ssom$distances
+1                 6    0.147270564
+2                 2    0.016411175
+4                 3    0.001218724
+5                 2    0.007587137
+6                 2    0.007587137
+7                 2    0.007587137
+> colnames(data.som)<-c("TranscriptID","Hcru_FH","Hcru_DH","Hcru_RH","sd","average","cv","sc.Hcru_FH","sc.Hcru_DH","sc.Hcru_RH","PC1","PC2","PC3","som.node","distance")
+> head(data.som)
+       TranscriptID Hcru_FH Hcru_DH Hcru_RH        sd  average        cv
+1 comp20833_c0_seq1   0.000  11.112   3.104  5.733519 4.738667 1.2099435
+2 comp29096_c0_seq1   2.518   2.255  10.099  4.454755 4.957333 0.8986193
+4 comp32848_c0_seq1  18.620   0.000   0.000 10.750262 6.206667 1.7320508
+5 comp31609_c0_seq1   0.000   0.000  26.891 15.525526 8.963667 1.7320508
+6 comp38917_c0_seq1   0.000   0.000   5.711  3.297247 1.903667 1.7320508
+7 comp36527_c0_seq1   0.000   0.000  10.167  5.869920 3.389000 1.7320508
+  sc.Hcru_FH sc.Hcru_DH sc.Hcru_RH        PC1       PC2           PC3 som.node
+1 -0.8264849  1.1115920 -0.2851071 -1.0480114 -1.043300 -6.358802e-14        6
+2 -0.5475797 -0.6066177  1.1541973 -0.5963275  1.741674  2.121636e-13        2
+4  1.1547005 -0.5773503 -0.5773503  1.9531553  0.156325 -7.127632e-14        3
+5 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.117195e-13        2
+6 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.117195e-13        2
+7 -0.5773503 -0.5773503  1.1547005 -0.6415017  1.716777  2.114975e-13        2
+     distance
+1 0.147270564
+2 0.016411175
+4 0.001218724
+5 0.007587137
+6 0.007587137
+7 0.007587137
+> write.table(data.som,file="Hcru2019_som.data.txt")
+> utils:::menuInstallPkgs()
+probando la URL 'https://cran.cnr.berkeley.edu/bin/windows/contrib/3.4/reshape_0.8.8.zip'
+Content type 'application/zip' length 128377 bytes (125 KB)
+downloaded 125 KB
+
+package ‘reshape’ successfully unpacked and MD5 sums checked
+
+The downloaded binary packages are in
+        C:\Users\Enrique\AppData\Local\Temp\Rtmp2zZfR9\downloaded_packages
+> library(reshape)
+Warning message:
+package ‘reshape’ was built under R version 3.4.4 
+> box.data<-data.som[c(1,8:10,14)]
+> melt.data<-melt(box.data,id=c("TranscriptID","som.node"))
+> node<-subset(melt.data,som.node==1)
+> p<-ggplot(node,aes(x=variable,y=value))
+> p+geom_point(colour="black",position="jitter",alpha=0.1)+geom_boxplot(outlier.size=0,size=2,alpha=0.6)+theme_bw()
+> node<-subset(melt.data,som.node==2)
+> p<-ggplot(node,aes(x=variable,y=value))
+> p+geom_point(colour="black",position="jitter",alpha=0.1)+geom_boxplot(outlier.size=0,size=2,alpha=0.6)+theme_bw()
+> node<-subset(melt.data,som.node==3)
+> p<-ggplot(node,aes(x=variable,y=value))
+> p+geom_point(colour="black",position="jitter",alpha=0.1)+geom_boxplot(outlier.size=0,size=2,alpha=0.6)+theme_bw()
+> node<-subset(melt.data,som.node==4)
+> p<-ggplot(node,aes(x=variable,y=value))
+> p+geom_point(colour="black",position="jitter",alpha=0.1)+geom_boxplot(outlier.size=0,size=2,alpha=0.6)+theme_bw()
+> node<-subset(melt.data,som.node==5)
+> p<-ggplot(node,aes(x=variable,y=value))
+> p+geom_point(colour="black",position="jitter",alpha=0.1)+geom_boxplot(outlier.size=0,size=2,alpha=0.6)+theme_bw()
+> node<-subset(melt.data,som.node==6)
+> p<-ggplot(node,aes(x=variable,y=value))
+> p+geom_point(colour="black",position="jitter",alpha=0.1)+geom_boxplot(outlier.size=0,size=2,alpha=0.6)+theme_bw()
+> 
